@@ -59,4 +59,26 @@ public class LabAnalyticsService {
                 RoundingMode.HALF_UP
         );
     }
+
+    public BigDecimal calculateAbsoluteDelta(
+            BigDecimal currentValue,
+            BigDecimal baseline) {
+
+        return currentValue.subtract(baseline);
+    }
+
+    public BigDecimal calculatePercentageDelta(
+            BigDecimal currentValue,
+            BigDecimal baseline) {
+
+        if (baseline.compareTo(BigDecimal.ZERO) == 0) {
+            throw new IllegalArgumentException("Baseline cannot be zero");
+        }
+
+        return currentValue
+                .subtract(baseline)
+                .divide(baseline, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP);
+    }
 }

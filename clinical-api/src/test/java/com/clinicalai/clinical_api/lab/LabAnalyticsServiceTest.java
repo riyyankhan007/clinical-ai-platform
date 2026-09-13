@@ -68,4 +68,29 @@ class LabAnalyticsServiceTest {
                 service.calculateBaseline(6L, "GLUCOSE")
         );
     }
+
+    @Test
+    void calculatesAbsoluteAndPercentageDelta() {
+        LabReferenceRangeRepository repository = mock(LabReferenceRangeRepository.class);
+        LabObservationRepository observationRepository = mock(LabObservationRepository.class);
+
+        LabAnalyticsService service =
+                new LabAnalyticsService(repository, observationRepository);
+
+        assertEquals(
+                new BigDecimal("20"),
+                service.calculateAbsoluteDelta(
+                        new BigDecimal("120"),
+                        new BigDecimal("100")
+                )
+        );
+
+        assertEquals(
+                new BigDecimal("20.00"),
+                service.calculatePercentageDelta(
+                        new BigDecimal("120"),
+                        new BigDecimal("100")
+                )
+        );
+    }
 }
