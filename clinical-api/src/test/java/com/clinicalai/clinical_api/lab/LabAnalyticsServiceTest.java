@@ -48,6 +48,9 @@ class LabAnalyticsServiceTest {
         LabReferenceRangeRepository repository = mock(LabReferenceRangeRepository.class);
         LabObservationRepository observationRepository = mock(LabObservationRepository.class);
 
+        LabAnalyticsService service =
+                new LabAnalyticsService(repository, observationRepository);
+
         LabObservation first = mock(LabObservation.class);
         LabObservation second = mock(LabObservation.class);
         LabObservation third = mock(LabObservation.class);
@@ -59,9 +62,6 @@ class LabAnalyticsServiceTest {
         when(observationRepository
                 .findByPatientIdAndAnalyteCodeOrderByObservedAtAsc(6L, "GLUCOSE"))
                 .thenReturn(List.of(first, second, third));
-
-        LabAnalyticsService service =
-                new LabAnalyticsService(repository, observationRepository);
 
         assertEquals(
                 new BigDecimal("110.0000"),
@@ -91,6 +91,30 @@ class LabAnalyticsServiceTest {
                         new BigDecimal("120"),
                         new BigDecimal("100")
                 )
+        );
+    }
+
+    @Test
+    void detectsLabTrend() {
+        LabReferenceRangeRepository repository = mock(LabReferenceRangeRepository.class);
+        LabObservationRepository observationRepository = mock(LabObservationRepository.class);
+
+        LabAnalyticsService service =
+                new LabAnalyticsService(repository, observationRepository);
+
+        LabObservation first = mock(LabObservation.class);
+        LabObservation second = mock(LabObservation.class);
+
+        when(first.getValueNumeric()).thenReturn(new BigDecimal("100"));
+        when(second.getValueNumeric()).thenReturn(new BigDecimal("120"));
+
+        when(observationRepository
+                .findByPatientIdAndAnalyteCodeOrderByObservedAtAsc(6L, "GLUCOSE"))
+                .thenReturn(List.of(first, second));
+
+        assertEquals(
+                LabTrend.RISING,
+                service.detectTrend(6L, "GLUCOSE")
         );
     }
 }

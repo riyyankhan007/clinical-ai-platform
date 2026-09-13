@@ -81,4 +81,33 @@ public class LabAnalyticsService {
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(2, RoundingMode.HALF_UP);
     }
+
+    public LabTrend detectTrend(Long patientId, String analyteCode) {
+        List<LabObservation> observations =
+                observationRepository
+                        .findByPatientIdAndAnalyteCodeOrderByObservedAtAsc(
+                                patientId, analyteCode);
+
+        if (observations.size() < 2) {
+            return LabTrend.STABLE;
+        }
+
+        BigDecimal previous =
+                observations.get(observations.size() - 2).getValueNumeric();
+
+        BigDecimal latest =
+                observations.get(observations.size() - 1).getValueNumeric();
+
+        int comparison = latest.compareTo(previous);
+
+        if (comparison > 0) {
+            return LabTrend.RISING;
+        }
+
+        if (comparison < 0) {
+            return LabTrend.FALLING;
+        }
+
+        return LabTrend.STABLE;
+    }
 }
