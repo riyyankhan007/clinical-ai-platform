@@ -220,3 +220,46 @@ body {
   font-size: 26px;
   color: #000000;
 }
+.timeline {
+  position: relative;
+  margin-top: 24px;
+  padding-left: 40px;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: #2563eb;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 28px;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -33px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #2563eb;
+  z-index: 2;
+}
+
+.timeline-content {
+  width: 100%;
+}
+
+.timeline-date {
+  margin-bottom: 8px;
+  color: #687386;
+  font-size: 12px;
+  font-weight: 600;
+}

@@ -105,27 +105,35 @@ function App() {
 
         <section className="records-section">
           <div className="section-header">
-            <div>
-              <h2>Clinical Records</h2>
-              <p>{patient.records.length} records found</p>
-            </div>
+            <h2>Clinical Timeline</h2>
+            <p>{patient.records.length} records found</p>
           </div>
 
-          <div className="records">
+          <div className="timeline">
             {patient.records.map((record) => (
-              <article className="record-card" key={record.id}>
-                <div className="record-header">
-                  <span className={`record-type ${record.recordType.toLowerCase()}`}>
-                    {record.recordType}
-                  </span>
-
-                  <span className="record-date">
-                    {new Date(record.recordDate).toLocaleString()}
-                  </span>
+              <article className="timeline-item" key={record.id}>
+                <div className="timeline-marker">
+                  <span />
                 </div>
 
-                <h3>{record.title}</h3>
-                <p>{record.content}</p>
+                <div className="timeline-content">
+                  <div className="timeline-date">
+                    {new Date(record.recordDate).toLocaleString()}
+                  </div>
+
+                  <div className="record-card">
+                    <div className="record-header">
+                      <span
+                        className={`record-type ${record.recordType.toLowerCase()}`}
+                      >
+                        {record.recordType}
+                      </span>
+                    </div>
+
+                    <h3>{record.title}</h3>
+                    <p>{record.content}</p>
+                  </div>
+                </div>
               </article>
             ))}
           </div>
