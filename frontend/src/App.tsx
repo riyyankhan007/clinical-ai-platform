@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import "./App.css";
 
 type ClinicalRecord = {
@@ -22,28 +23,120 @@ type Patient = {
 };
 
 function App() {
+  const [authenticated, setAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [patient, setPatient] = useState<Patient | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
+  const loadPatient = async () => {
+    setLoading(true);
+    setError("");
 
-    fetch("http://localhost:8081/api/patients/6", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to load patient");
+    try {
+      const response = await fetch("http://localhost:8081/api/patients/6",
+        {
+          credentials: "include",
         }
-        return response.json();
-      })
-      .then((data) => setPatient(data))
-      .catch(() => setError("Unable to load patient information"))
-      .finally(() => setLoading(false));
-  }, []);
+      );
+
+      if (response.status === 401) {
+        setAuthenticated(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to load patient");
+      }
+
+      const data = await response.json();
+      setPatient(data);
+    } catch {
+      setError("Unable to load patient information");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async (event: FormEvent) => {
+    event.preventDefault();
+    setLoginError("");
+
+    try {
+      const response = await fetch("http://localhost:8081/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            username,
+            password,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        setLoginError("Invalid username or password");
+        return;
+      }
+
+      setAuthenticated(true);
+      setPassword("");
+      await loadPatient();
+    } catch {
+      setLoginError("Unable to connect to the clinical API");
+    }
+  };
+
+  const handleLogout = async () => {
+    await fetch("http://localhost:8081/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    setAuthenticated(false);
+    setPatient(null);
+  };
+
+  if (!authenticated) {
+    return (
+      <div className="app">
+        <div className="login-card">
+          <h1>Clinical Intelligence</h1>
+          <p>Doctor Login</p>
+
+          <form onSubmit={handleLogin}>
+            <label>Username</label>
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
+              required
+            />
+
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              required
+            />
+
+            {loginError && (
+              <p className="error">{loginError}</p>
+            )}
+
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="app">Loading patient...</div>;
@@ -68,6 +161,7 @@ function App() {
         <div className="doctor">
           <span className="doctor-avatar">D</span>
           <span>Doctor</span>
+          <button onClick={handleLogout}>Logout</button>
         </div>
       </header>
 
@@ -151,3 +245,7 @@ function App() {
 }
 
 export default App;
+
+
+
+
