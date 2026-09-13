@@ -36,6 +36,8 @@ public class PatientService {
                         record.getId(),
                         record.getRecordType(),
                         record.getRecordDate(),
+                        record.getSourceSystem(),
+                        record.getSourceRecordId(),
                         record.getTitle(),
                         record.getContent()
                 ))

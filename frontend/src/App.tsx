@@ -5,6 +5,8 @@ type ClinicalRecord = {
   id: number;
   recordType: string;
   recordDate: string;
+  sourceSystem: string;
+  sourceRecordId: string;
   title: string;
   content: string;
 };
@@ -132,6 +134,11 @@ function App() {
 
                     <h3>{record.title}</h3>
                     <p>{record.content}</p>
+
+                    <div className="record-source">
+                      <span>{record.sourceSystem}</span>
+                      <code>{record.sourceRecordId}</code>
+                    </div>
                   </div>
                 </div>
               </article>

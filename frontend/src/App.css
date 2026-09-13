@@ -263,3 +263,22 @@ body {
   font-size: 12px;
   font-weight: 600;
 }
+.record-source {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #edf0f5;
+  color: #687386;
+  font-size: 12px;
+}
+
+.record-source code {
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #f1f3f6;
+  color: #3f4a5a;
+  font-family: monospace;
+  font-size: 11px;
+}
