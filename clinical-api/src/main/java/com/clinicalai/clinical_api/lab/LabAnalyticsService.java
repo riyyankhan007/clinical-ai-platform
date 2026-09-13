@@ -3,14 +3,20 @@ package com.clinicalai.clinical_api.lab;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 
 @Service
 public class LabAnalyticsService {
 
     private final LabReferenceRangeRepository referenceRangeRepository;
+    private final LabObservationRepository observationRepository;
 
-    public LabAnalyticsService(LabReferenceRangeRepository referenceRangeRepository) {
+    public LabAnalyticsService(
+            LabReferenceRangeRepository referenceRangeRepository,
+            LabObservationRepository observationRepository) {
         this.referenceRangeRepository = referenceRangeRepository;
+        this.observationRepository = observationRepository;
     }
 
     public LabFlag calculateFlag(String analyteCode, String unit, BigDecimal value) {
@@ -19,7 +25,8 @@ public class LabAnalyticsService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No reference range found for " + analyteCode + " " + unit));
 
-        if (range.getLowerValue() != null && value.compareTo(range.getLowerValue()) < 0) {
+        if (range.getLowerValue() != null
+                && value.compareTo(range.getLowerValue()) < 0) {
             return LabFlag.LOW;
         }
 
@@ -28,5 +35,28 @@ public class LabAnalyticsService {
         }
 
         return LabFlag.NORMAL;
+    }
+
+    public BigDecimal calculateBaseline(Long patientId, String analyteCode) {
+        List<LabObservation> observations =
+                observationRepository
+                        .findByPatientIdAndAnalyteCodeOrderByObservedAtAsc(
+                                patientId, analyteCode);
+
+        if (observations.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No observations found for patient " + patientId
+                            + " and analyte " + analyteCode);
+        }
+
+        BigDecimal total = observations.stream()
+                .map(LabObservation::getValueNumeric)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return total.divide(
+                BigDecimal.valueOf(observations.size()),
+                4,
+                RoundingMode.HALF_UP
+        );
     }
 }

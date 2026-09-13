@@ -3,6 +3,7 @@ package com.clinicalai.clinical_api.lab;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,6 +14,7 @@ class LabAnalyticsServiceTest {
     @Test
     void calculatesLowNormalAndHighFlags() {
         LabReferenceRangeRepository repository = mock(LabReferenceRangeRepository.class);
+        LabObservationRepository observationRepository = mock(LabObservationRepository.class);
 
         LabReferenceRange range = mock(LabReferenceRange.class);
 
@@ -22,7 +24,8 @@ class LabAnalyticsServiceTest {
         when(repository.findByAnalyteCodeAndUnit("GLUCOSE", "mg/dL"))
                 .thenReturn(Optional.of(range));
 
-        LabAnalyticsService service = new LabAnalyticsService(repository);
+        LabAnalyticsService service =
+                new LabAnalyticsService(repository, observationRepository);
 
         assertEquals(
                 LabFlag.LOW,
@@ -37,6 +40,32 @@ class LabAnalyticsServiceTest {
         assertEquals(
                 LabFlag.HIGH,
                 service.calculateFlag("GLUCOSE", "mg/dL", new BigDecimal("110"))
+        );
+    }
+
+    @Test
+    void calculatesPatientBaseline() {
+        LabReferenceRangeRepository repository = mock(LabReferenceRangeRepository.class);
+        LabObservationRepository observationRepository = mock(LabObservationRepository.class);
+
+        LabObservation first = mock(LabObservation.class);
+        LabObservation second = mock(LabObservation.class);
+        LabObservation third = mock(LabObservation.class);
+
+        when(first.getValueNumeric()).thenReturn(new BigDecimal("100"));
+        when(second.getValueNumeric()).thenReturn(new BigDecimal("110"));
+        when(third.getValueNumeric()).thenReturn(new BigDecimal("120"));
+
+        when(observationRepository
+                .findByPatientIdAndAnalyteCodeOrderByObservedAtAsc(6L, "GLUCOSE"))
+                .thenReturn(List.of(first, second, third));
+
+        LabAnalyticsService service =
+                new LabAnalyticsService(repository, observationRepository);
+
+        assertEquals(
+                new BigDecimal("110.0000"),
+                service.calculateBaseline(6L, "GLUCOSE")
         );
     }
 }
